@@ -1,0 +1,14 @@
+#include <stdio.h>
+
+int getNumCarretas(){
+	int number;
+    printf ("Ingresa el numero de carretillas ");
+  	scanf ("%d", &number);
+  	printf ("You entered: %d \n", number);
+
+
+}
+int main() {
+	getNumCarretas();
+    return 0;	
+}

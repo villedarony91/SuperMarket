@@ -1,0 +1,4 @@
+build:
+        gcc -o super Supermecado.c
+run:
+    ./super
