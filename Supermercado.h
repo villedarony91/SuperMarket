@@ -15,6 +15,7 @@ typedef struct Node  {
   int age;
   int pregnant;
   int id;
+  int priority;
   struct Node* next;
   struct Node* prev;
 }Node;
