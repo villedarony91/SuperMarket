@@ -6,7 +6,14 @@ int getNumCarretas(){
   int number;
   printf ("Ingresa el numero de carretillas ");
   scanf ("%d", &number);
-  printf ("You entered: %d \n", number);
+  return number;
+}
+
+
+int getPerCompras(){
+  int number;
+  printf ("Ingresa el numero de Personas de Compras ");
+  scanf ("%d", &number);
   return number;
 }
 
@@ -108,6 +115,23 @@ struct Node* getNewNode(int gen, int ag, int preg, int id, int prior){
   return newNode;
 }
 
+void print() {
+  struct Node* temp = head;
+  printf("Forward: ");
+  while(temp != NULL) {
+    printf("********\n");
+    printf("id %d \n",temp->id);
+    printf("edad%d \n", temp->age);
+    printf("prioridad %d \n", temp->priority);
+    printf("embarazado %d \n", temp->pregnant);
+    printf("genero %d \n", temp->gender);
+    temp = temp->next;
+    head = head;
+  }
+  printf("\n");
+} 
+
+
 //Inserts a Node at head of doubly linked list
 void insertAtHead(int gen, int ag, int preg, int id, int prior) {
   struct Node* newNode = getNewNode(gen, ag , preg, id, prior);
@@ -135,22 +159,6 @@ void insertAtTail(int gen, int ag, int preg, int id, int prior) {
   head = head;
 }
 
-void print() {
-  struct Node* temp = head;
-  printf("Forward: ");
-  while(temp != NULL) {
-    printf("********\n");
-    printf("id %d \n",temp->id);
-    printf("edad%d \n", temp->age);
-    printf("prioridad %d \n", temp->priority);
-    printf("embarazado %d \n", temp->pregnant);
-    printf("genero %d \n", temp->gender);
-    temp = temp->next;
-    head = head;
-  }
-  printf("\n");
-} 
-
 void insertMiddle(int gen, int ag, int preg, int id, int prior){
   struct Node* temp = head;
   struct Node* newNode = getNewNode(gen, ag , preg, id, prior);
@@ -159,13 +167,12 @@ void insertMiddle(int gen, int ag, int preg, int id, int prior){
     insertAtHead(gen, ag, preg, id, prior);
   }
   else{
-    while(temp->priority == 0) {
+    while(temp->priority == 0 && temp->next != NULL) {
       temp = temp->next;
     }
-    if(temp->next == NULL){
+    if(temp->next == NULL || temp->priority != 1){
       insertAtTail(gen, ag, preg, id, prior);
     }else{
-      printf("?????????\n %d",temp->priority);
       temp->prev->next = newNode;
       newNode->prev = temp->prev;
       temp->prev = newNode;
@@ -175,34 +182,30 @@ void insertMiddle(int gen, int ag, int preg, int id, int prior){
 }
 
 
-void createClient(){
-  int gender = getGender();
-  int pregnant = setPregnant();
-  int age = getAge();
+
+void createClient(int buying){
+  int gender = getRandom(2);
+  int pregnant = getRandom(2);
+  int age = getRandom(100);
   int priority = 1;
   if(gender == 0){
     pregnant = 3;
   }
-  if( pregnant == 1){
+  if( pregnant == 1 || age > 59){
     priority = 0;
   }
-  if(age > 59){
-    priority = 0;
-  }
+  if(buying == 0){
   if(priority == 1){insertAtTail(gender, age, pregnant, clientId++, priority);}
   else{insertMiddle(gender, age, pregnant, clientId++, priority);}
+  }
+  if(buying == 1){
+    queueTurn = getRandom(5);
+    
+  }
 }
 
-int getGender(){
-  return rand() % 2;
-}
-
-int getAge(){
-  return rand() % 100;
-}
-
-int setPregnant(){
-  return rand() % 2;
+int getRandom(int max){
+  return rand() % max;
 }
 
 int getClientNumber(){
@@ -216,7 +219,7 @@ int setClientsOnList(){
   int i = 0;
   int clientNumber = getClientNumber();
   for(i ; i < clientNumber ; i++){
-    createClient();
+    createClient(0);
   }
 }
 
