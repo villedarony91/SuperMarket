@@ -16,6 +16,7 @@ typedef struct Node  {
   int pregnant;
   int id;
   int priority;
+  int carretaId;
   int turnoCompra;
   int turnoCaja;
   struct Node* next;
