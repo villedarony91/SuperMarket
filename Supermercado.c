@@ -1,137 +1,85 @@
 #include <stdlib.h>
 #include "Supermercado.h"
 
-int getNumCarretas(){
-  int number;
-  printf ("Ingresa el numero de carretillas ");
-  scanf ("%d", &number);
-  return number;
-}
-
-
-int getPerCompras(){
-  int number;
-  printf ("Ingresa el numero de Personas de Compras ");
-  scanf ("%d", &number);
-  return number;
-}
-
-int getGoldenCitizen(){
-  int number;
-  printf ("Ingresa el numero de Ciudadanos de oro en cola para pagar");
-  scanf ("%d", &number);
-  return number;
-}
-
-int getCitizen(){
-  int number;
-  printf ("Ingresa el numero de Ciudadanos en cola para pagar");
-  scanf ("%d", &number);
-  return number;
-}
-
-Carreta * createStackCarr(int maxElements)
-{
-  Carreta *S;
-  S = (Carreta *)malloc(sizeof(Carreta));
-  S->noCarreta = (int *)malloc(sizeof(int)*maxElements);
-  S->size = 0;
-  S->capacity = maxElements;
-  return S;
-}
-
-void pop(Carreta *S)
-{
-  if(S->size==0)
-    {
-      printf("Pila esta vacia\n");
-      return;
-    }
-  else
-    {
-      S->size--;
-    }
-  return;
-}
-
-int top(Carreta *S)
-{
-  if(S->size==0)
-    {
-      printf("Stack is Empty\n");
-      exit(0);
-    }
-  //Devolver el último elemento de la pila
-  return S->noCarreta[S->size-1];
-}
-void push(Carreta *S,int noCarreta)
-{
-  //Verificar si la pila esta llena
-  if(S->size == S->capacity)
-    {
-      printf("Pila esta llena\n");
-    }
-  else
-    {
-      //Al ingresar un elemento a la pila se debe de aumentar el tamaño
-      S->noCarreta[S->size++] = noCarreta;
-    }
-  return;
-}
-int carrId;
-
-void createStacksForCarretas(){
-  int i = 0;
-  int r;
-  int carrNum = getNumCarretas();
-  printf("carrnum %d",carrNum);
-  Carreta *stack0 = createStackCarr(carrNum);
-  Carreta *stack1 = createStackCarr(carrNum);
-  Carreta *stack2 = createStackCarr(carrNum);
-  Carreta *stack3 = createStackCarr(carrNum);
-  for(i ; i < carrNum; i++){
-    switch(r = rand() % 4){
-    case 0:
-      push(stack0,i);
-      printf("the top is stack0 %d\n",top(stack0));
-      break;
-    case 1:
-      push(stack1, i);
-      printf("the top is stack1 %d\n",top(stack1));
-      break;
-    case 2:
-      push (stack2, i);
-      printf("the top is stack2 %d\n",top(stack2));
-      break;
-    case 3:
-      push (stack3, i);
-      printf("the top is stack3 %d\n",top(stack3));
-      break;
-    }
-    carrId++;
-  }
-}
-
-struct Node* head;// global variable - pointer to head node.
+int carrId = 0;
+int clientId = 0;
+int clientWaiting = 0;
+struct Carreta* headStack0;
+struct Carreta* headStack1;
+struct Carreta* headStack2;
+struct Carreta* headStack3;
+struct Node* head;
 struct Node* headQ;
 struct Node* headCirc;
 struct Node* goldenHead;
 struct Node* cityHead;
-int clientId = 0;
 
-//Creates a new Node and returns pointer to it. 
+
+struct Carreta* getNewCarr(int carreta){
+  struct Carreta* newNode = (struct Carreta*)malloc(sizeof(struct Carreta));
+  newNode->noCarreta = carreta;
+  newNode->next = NULL;
+  newNode->prev = NULL;			    
+}
+
+void insertAtStack(int carreta, int stackNo, Carreta *stack) {
+  struct Carreta* newNode = getNewCarr(carreta);
+  if(stack == NULL) {
+    stack = newNode;
+  }else{
+  stack->prev = newNode;
+  newNode->next = stack;
+  }
+  switch(stackNo){
+  case 0:
+    headStack0 = newNode;
+    break;
+  case 1:
+    headStack1 = newNode;
+    break;
+  case 2:
+    headStack2 = newNode;
+    break;
+  case 3:
+    headStack3 = newNode;
+    break;
+  }
+}
+
+void createCarretas(){
+  int i;
+  int carrNum = getNumCarretas();
+  for( i = 0; i < carrNum ; i++){
+    switch(getRandom(4)){
+    case 0:
+      insertAtStack(carrId++, 0, headStack0);
+      break;
+    case 1:
+      insertAtStack(carrId++, 1, headStack1);
+      break;
+    case 2:
+      insertAtStack(carrId++, 2, headStack2);
+      break;
+    case 3:
+      insertAtStack(carrId++, 3, headStack3);
+      break;
+    }
+  }
+}
+
 struct Node* getNewNode(int gen, int ag, int preg, int id, int prior){
   struct Node* newNode
     = (struct Node*)malloc(sizeof(struct Node));
   newNode->gender = gen;
   newNode->age = ag;
   newNode->pregnant = preg;
-  newNode->id = clientId;
+  newNode->id = id;
   newNode->priority = prior;
   newNode->prev = NULL;
   newNode->next = NULL;
   return newNode;
 }
+
 
 struct Node* getNewNodeCirc(int gen, int ag, int preg, int id, int prior,int carreta, int turnQ){
   struct Node* newNode
@@ -139,7 +87,7 @@ struct Node* getNewNodeCirc(int gen, int ag, int preg, int id, int prior,int car
   newNode->gender = gen;
   newNode->age = ag;
   newNode->pregnant = preg;
-  newNode->id = clientId;
+  newNode->id = id;
   newNode->priority = prior;
   newNode->turnoCompra = turnQ;
   newNode->carretaId = carreta;
@@ -164,8 +112,6 @@ void print() {
   printf("\n");
 } 
 
-
-//Inserts a Node at head of doubly linked list
 void insertAtHead(int gen, int ag, int preg, int id, int prior) {
   struct Node* newNode = getNewNode(gen, ag , preg, id, prior);
   if(head == NULL) {
@@ -177,8 +123,6 @@ void insertAtHead(int gen, int ag, int preg, int id, int prior) {
   head = newNode;
 }
 
-
-//Inserts a Node at tail of Doubly linked list
 void insertAtTail(int gen, int ag, int preg, int id, int prior) {
   struct Node* temp = head;
   struct Node* newNode = getNewNode(gen, ag , preg, id, prior);
@@ -187,7 +131,7 @@ void insertAtTail(int gen, int ag, int preg, int id, int prior) {
     return;
   }
 
-  while(temp->next != NULL) temp = temp->next; // Go To last Node
+  while(temp->next != NULL) temp = temp->next;
   temp->next = newNode;
   newNode->prev = temp;
   head = head;
@@ -223,7 +167,7 @@ void enqueueForPayCiti(int gen, int ag, int preg, int id, int prior,
     goldenHead = newNode;
     return;
   }
-  while(temp->next != NULL) temp = temp->next; // Go To last Node
+  while(temp->next != NULL) temp = temp->next;
   temp->next = newNode;
   newNode->prev = temp;
   head = head;
@@ -237,7 +181,7 @@ void enqueueForPay(int gen, int ag, int preg, int id, int prior,
     cityHead = newNode;
     return;
   }
-  while(temp->next != NULL) temp = temp->next; // Go To last Node
+  while(temp->next != NULL) temp = temp->next;
   temp->next = newNode;
   newNode->prev = temp;
 }
@@ -258,9 +202,20 @@ void printG(Node* goldenH) {
 } 
 
 
-void addOnCircular(int gen, int ag, int preg, int id, int prior, int turnCir){
+void printStack(Carreta* stack) {
+  struct Carreta* temp = stack;
+  while(temp != NULL) {
+    printf("\n********Carreta**********\n");
+    printf("Carreta %d \n",temp->noCarreta);
+    temp = temp->next;
+  }
+  printf("\n");
+} 
+
+
+void addOnCircular(int gen, int ag, int preg, int id, int prior, int numCarreta, int turnCir){
   struct Node* temp = headCirc;
-  struct Node* newNode = getNewNodeCirc(gen, ag , preg, id, prior, carrId++,turnCir);
+  struct Node* newNode = getNewNodeCirc(gen, ag , preg, id, prior, numCarreta,turnCir);
   if(headCirc == NULL) {
     headCirc = newNode;
     headCirc->next = newNode;
@@ -278,8 +233,6 @@ void addOnCircular(int gen, int ag, int preg, int id, int prior, int turnCir){
   }
     temp->next = newNode;
     newNode->next = headCirc;
-    printf("actual %d)",temp->id);
-    printf("siguiente %d",temp->next->id);
 }
 
 void createClient(int flag){
@@ -299,7 +252,7 @@ void createClient(int flag){
   }
   if(flag == 1){
     int queueTurn = getRandom(5);
-    addOnCircular(gender, age, pregnant, clientId++, priority,queueTurn);
+    addOnCircular(gender, age, pregnant, clientId++, priority,carrId++,queueTurn);
     printf("added");
   }
   if(flag == 2){
@@ -307,10 +260,6 @@ void createClient(int flag){
     if(pregnant == 1){pregnant = 0;}
     enqueueForPay(gender, age, pregnant, clientId++, 1,carrId++, -1);
   }
-}
-
-int getRandom(int max){
-  return rand() % max;
 }
 
 void setClientsOnIQueue(){
@@ -326,6 +275,7 @@ void printOnCircQueue(){
   while(temp->next != headCirc) {
     printf("********\n");
     printf("id %d \n",temp->id);
+    printf("edad %d \n", temp->age);
     printf("prioridad %d \n", temp->priority);
     printf("Carreta %d \n", temp->carretaId);
     printf("Turno %d \n", temp->turnoCompra);
@@ -334,16 +284,10 @@ void printOnCircQueue(){
     printf("********\n");
     printf("id %d \n",temp->id);
     printf("prioridad %d \n", temp->priority);
+    printf("edad %d \n", temp->age);
     printf("Carreta %d \n", temp->carretaId);
     printf("Turno %d \n", temp->turnoCompra);
     printf("\n");
-}
-
-int getClientNumber(){
-  int number;
-  printf ("Ingresa el numero de Clientes");
-  scanf ("%d", &number);
-  return number;
 }
 
 void setClientsOnList(){
@@ -351,6 +295,8 @@ void setClientsOnList(){
   int clientNumber = getClientNumber();
   for(i ; i < clientNumber ; i++){
     createClient(0);
+    clientWaiting++;
+    printf("--------Esperando-------- %d \n",clientWaiting);
   }
 }
 
@@ -370,16 +316,143 @@ void createGoldenCitizens(){
   }
 }
 
+
+struct Node* getClient(){
+  if(head == NULL){printf("No hay clientes en espera");}
+  else{
+    return head;
+  }
+}
+
+void pop(Carreta *stack, int stackNo){
+  printf("POOOOP \n");
+  struct Carreta *temp;
+  if(stack->next != NULL){
+    temp = stack->next;}
+  temp = NULL;
+  switch(stackNo){
+  case 0:
+    free(headStack0);
+    headStack0 = NULL;
+    headStack0 = temp;
+    break;
+  case 1:
+    free(headStack1);
+    headStack1 = NULL;
+    headStack1 = temp;
+    break;
+  case 2:
+    free(headStack2);
+    headStack2 = NULL;
+    headStack2 = temp;
+    break;
+  case 3:
+    free(headStack3);
+    headStack3 = NULL;
+    headStack3 = temp;
+    break;
+  }
+    printf("POOOOP TERMINADO\n");
+}
+
+int getCarrId(Carreta *stack){
+  struct Carreta* temp = stack;
+  return stack->noCarreta;
+}
+
+int getStackNo(){
+    printf("getting stack NO \n");
+  if(headStack0 != NULL) return 0;
+  if(headStack1 != NULL) return 1;
+  if(headStack2 != NULL) return 2;
+  if(headStack3 != NULL) return 3;
+  return -1;
+}
+
+struct Carreta* getStack(int stackNo){
+  printf("getting stack \n");
+  switch(stackNo){
+  case 0:
+    return headStack0;
+    break;
+  case 1:
+    return headStack1;
+    break;
+  case 2:
+    return headStack2;
+    break;
+  case 3:
+    return headStack3;
+    break;
+  }
+  return NULL;
+}
+  
+void insertOnCircular(Node* person){
+  addOnCircular(person->gender, person->age, person->pregnant, person->id, person->priority,
+		person->carretaId, getRandom(5));
+  
+}
+void asignCarreta(){
+  int stackId = getStackNo();
+  struct Carreta *stack;
+  struct Node *temp;
+  if(stackId != -1 && head != NULL){
+    stack = getStack(stackId);
+    int carreta = getCarrId(stack);
+    printf("********imprimiendo numero ******** %d",carreta);
+    pop(stack, stackId);
+    printf("********imprimiendo numero ******** %d",carreta);
+    if(head->next != NULL){ temp = head->next;}
+    else {temp = NULL;}
+    head->carretaId = carreta;
+    insertOnCircular(head);
+    free(head);
+    head = NULL;
+    head = temp;
+    clientWaiting--;
+        printf("--------Esperando-------- %d \n",clientWaiting);
+        printf("********terminando assign ******** %d \n",carreta);
+  }else{
+    if(head != NULL)
+      {printf("No hay carretas disponibles, cliente en espera \n");}
+    if(stackId != -1)
+      {printf("Clientes agotados, carreta en espera \n");}
+  }
+}
+
+void iterateAsignCarreta(){
+  int i = 0;
+  while( i < carrId){
+    asignCarreta();
+    i++;
+  }
+}
+
+
 int main() {
-  createStacksForCarretas();
+  createCarretas();
+  printf("************ pila 1 ************");
+  printStack(headStack0);
+  printf("************ pila 2 ************");
+  printStack(headStack1);
+  printf("************ pila 3 ************");
+  printStack(headStack2);
+  printf("************ pila 4 ************"); 
+  printStack(headStack3);
   setClientsOnList();
   print();
   setClientsOnIQueue();
   printOnCircQueue();
-  createGoldenCitizens();
+  /*  createGoldenCitizens();
   printG(goldenHead);
   createCitizensForPay();
-  printG(cityHead);
+  printG(cityHead);*/
+  iterateAsignCarreta();
+  printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  print();
+  printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \n");
+  printOnCircQueue();
   return 0;
 }
 
