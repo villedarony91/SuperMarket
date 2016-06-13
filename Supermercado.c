@@ -4,6 +4,8 @@
 int carrId = 0;
 int clientId = 0;
 int clientWaiting = 0;
+int noCaja = 0;
+int noClients = 0;
 struct Carreta* headStack0;
 struct Carreta* headStack1;
 struct Carreta* headStack2;
@@ -13,6 +15,7 @@ struct Node* headQ;
 struct Node* headCirc;
 struct Node* goldenHead;
 struct Node* cityHead;
+struct Caja* cajaHead;
 
 
 struct Carreta* getNewCarr(int carreta){
@@ -277,6 +280,22 @@ void printG(Node* goldenH) {
   printf("\n");
 } 
 
+void printC(Caja* goldenH) {
+  struct Caja* temp = goldenH;
+  printf("Forward: ");
+  while(temp != NULL) {
+    printf("********\n");
+    printf("caja Id %d \n",temp->noCaja);
+    printf("cliente %d \n", temp->clients);
+    printf("disponible %d \n", temp->available);
+    printf("no cliente %d \n", temp->noCliente);
+    printf("turno %d \n", temp->turno);
+    printf("carreta %d \n", temp->noCarreta);
+    temp = temp->next;
+  }
+  printf("\n");
+} 
+
 
 void printStack(Carreta* stack) {
   struct Carreta* temp = stack;
@@ -471,23 +490,117 @@ void asignCarreta(){
         printf("--------Esperando-------- %d \n",clientWaiting);
         printf("********terminando assign ******** %d \n",carreta);
   }else{
-    if(head != NULL)
+      if(head != NULL)
       {printf("No hay carretas disponibles, cliente en espera \n");}
-    if(stackId != -1)
+      if(stackId != -1)
       {printf("Clientes agotados, carreta en espera \n");}
   }
 }
 
-void iterateAsignCarreta(){
-  int i = 0;
-  while( i < carrId){
-    asignCarreta();
-    i++;
-  }
+struct Node *getQueueToPay(){
+    if(goldenHead != NULL) return goldenHead;
+    if(cityHead != NULL) return cityHead;
+    return NULL;
+}
+
+struct Node* getClientToPay(){
+    struct Node* temp = getQueueToPay();
+    struct Node* aux = temp;
+    struct Node* previous = temp;
+    struct Node* retorno;
+    if(getQueueToPay() == NULL) return NULL;
+    //if(temp->next != NULL)
+    temp = temp->next;
+    if(aux == goldenHead){
+	retorno = goldenHead;
+	goldenHead = temp;
+	free(previous);
+	previous = NULL;
+    } else{
+	retorno = cityHead;
+	cityHead = temp;
+	free(previous);
+	previous = NULL;
+    }
+    return retorno;
 }
 
 
-int main() {
+struct Caja *getNewCaja(int noCaja, int clients, int available, int noCliente, int turno, int noCarreta){
+    struct Caja* newNode = (struct Caja*)malloc(sizeof(struct Caja));
+    newNode->noCaja = noCaja;
+    newNode->clients= clients;
+    newNode->available = available;
+    newNode->noCliente = noCliente;
+    newNode->turno = turno;
+    newNode->noCarreta = noCarreta;
+    printf("finish creating \n");
+    return newNode;
+}
+
+struct Caja* createDoubleCaja(){
+    struct Caja* node = getNewCaja(noCaja++, noClients, 0, -1, -1, -1);
+    printf("finish double Caja \n");
+    return node;
+}
+
+void createListCaja(){
+    printf("HEAD");
+    struct Caja* newNode = createDoubleCaja();
+    struct Caja* temp = cajaHead;
+    if(cajaHead == NULL){
+	cajaHead = newNode;
+    }else{
+	while(temp->next != NULL)temp = temp->next;
+	temp->next = newNode;
+	newNode->prev = temp;
+	cajaHead = cajaHead;
+    }
+    
+}
+
+void iterateCreateCaja(){
+    int i = 0;
+    int cajas = getNoCajas();
+    for( i; i < cajas ; i++){
+	createListCaja();
+    }
+    printf("finish Creation \n");
+}
+
+void iterateAsignCarreta(){
+    int i = 0;
+    while( i < carrId){
+	asignCarreta();
+	i++;
+    }
+}
+
+void passingToCaja(){
+    struct Caja* temp = cajaHead;
+    struct Node* client = getClientToPay();
+    if(client == NULL){
+	printf("No Hay clientes en espera\n");
+	return;
+    }
+    while(temp->available != 0 && temp->next != NULL) {
+	temp = temp->next;
+    }
+    if(temp->next == NULL && temp->available != 0){
+	printf("No hay cajas disponibles cliente en espera \n");
+	    return;
+    }else{
+	printf("empiezan a pasar \n");
+    temp->clients = 0;
+    temp->noCliente = client->id;
+    temp->noCarreta = client->carretaId;
+    temp->turno = getRandom(3);
+    temp->available = 1;
+    passingToCaja();
+    }
+}
+
+void createInitials(){
   createCarretas();
   printf("************ pila 1 ************");
   printStack(headStack0);
@@ -505,7 +618,89 @@ int main() {
   printG(goldenHead);
   createCitizensForPay();
   printG(cityHead);
-  iterateAsignCarreta();
+  printG(cityHead);
+  iterateCreateCaja();
+  printC(cajaHead);
+}
+void releaseCarreta(Caja * toRelease){
+    printf("entrando en release \n");
+    struct Caja *temp = toRelease;
+    switch(getRandom(4)){
+    case 0:
+	insertAtStack(temp->noCarreta, 0 , headStack0);
+	temp->noCliente = -1;
+	temp->clients = 0;
+	temp->turno = -1;
+	temp->available = 0;
+	temp->noCarreta = -1;
+    case 1:
+	insertAtStack(temp->noCarreta, 1 , headStack1);
+	temp->noCliente = -1;
+	temp->clients = 0;
+	temp->turno = -1;
+	temp->available = 0;
+	temp->noCarreta = -1;
+    case 2:
+	insertAtStack(temp->noCarreta, 2 , headStack2);
+	temp->noCliente = -1;
+	temp->clients = 0;
+	temp->turno = -1;
+	temp->available = 0;
+	temp->noCarreta = -1;
+    case 3:
+	insertAtStack(temp->noCarreta, 3 , headStack3);
+	temp->noCliente = -1;
+	temp->clients = 0;
+	temp->turno = -1;
+	temp->available = 0;
+	temp->noCarreta = -1;
+    }
+    printf("saliendo release \n");
+}
+
+void moveTurnoCompra(){
+    struct Node* temp = headCirc;
+    while(temp->next != headCirc) {
+	if( temp->turnoCompra > 0)
+	{
+	    int tempTurn = temp->turnoCompra -1;
+	    temp->turnoCompra = tempTurn;
+	}
+	temp = temp->next;
+    }
+    if(temp->turnoCompra > 0){
+	int tempTurn = temp->turnoCompra -1;
+	temp->turnoCompra = tempTurn;
+	printf("\n");
+    }
+} 
+
+void moveTurnoCaja(){
+    struct Caja* temp = cajaHead;
+    struct Caja* aux;
+    while(temp->next != NULL) {
+	printf("ciclo \n");
+	if(temp->turno == 0){
+	    printf("validated \n");
+	    releaseCarreta(temp);
+	}else{
+	    if(temp->turno > 0){
+		int prevTurno = temp->turno;
+		temp->turno = prevTurno - 1;
+	    }
+	    temp = temp->next;
+	}
+   }
+}
+
+
+int main() {
+  createInitials();
+  print();
+  printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+  setClientsOnList();
+  print();
+  /*iterateAsignCarreta();
   printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
   print();
   printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \n");
@@ -513,7 +708,15 @@ int main() {
   removeOnCircular(0);
   printOnCircQueue();
   printf("************************************* \n");
-  printG(goldenHead);
-  printG(cityHead);
+  moveTurnoCompra();
+  printOnCircQueue();
+   printG(goldenHead);
+   passingToCaja();
+   printC(cajaHead);*/
+  // printG(goldenHead);
+  // printG(cityHead);
+//   moveTurnoCaja();
+//   printC(cajaHead);
   return 0;
 }
+

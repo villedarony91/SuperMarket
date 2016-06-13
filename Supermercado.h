@@ -22,6 +22,17 @@ typedef struct Node  {
   struct Node* prev;
 }Node;
 
+typedef struct Caja{
+  int noCaja;
+  int clients;
+  int available;
+  int noCliente;
+  int turno;
+  int noCarreta;
+  struct Caja* next;
+  struct Caja* prev;
+}Caja;
+
 int getClientNumber(){
 int number;
   printf ("Ingresa el numero de clientes");
@@ -57,7 +68,16 @@ int getCitizen(){
   return number;
 }
 
+int getNoCajas(){
+  int number;
+  printf ("Ingresa el numero de Cajas");
+  scanf ("%d", &number);
+  return number;
+}
+
 
 int getRandom(int max){
   return rand() % max;
 }
+
+
