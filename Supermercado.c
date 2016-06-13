@@ -1,4 +1,7 @@
 #include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
 #include "Supermercado.h"
 
 int carrId = 0;
@@ -6,6 +9,7 @@ int clientId = 0;
 int clientWaiting = 0;
 int noCaja = 0;
 int noClients = 0;
+int countStep = 0;
 struct Carreta* headStack0;
 struct Carreta* headStack1;
 struct Carreta* headStack2;
@@ -192,8 +196,8 @@ struct Node* removeOnCircular(int turn){
       if(headCirc->turnoCompra == turn){
 	printf("----------HEAD--------- %d \n", headCirc->age);
       temp = headCirc;
-      temp = temp->next;
-      headCirc = temp;
+      //temp = temp->next;
+      headCirc = temp->next;
       free(temp);
       temp = NULL;
       printf("----------HEADING---------* %d \n",headCirc->age);
@@ -693,14 +697,8 @@ void moveTurnoCaja(){
    }
 }
 
-
-int main() {
-  createInitials();
-  print();
-  printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-  setClientsOnList();
-  print();
-  /*iterateAsignCarreta();
+void step(){
+  iterateAsignCarreta();
   printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
   print();
   printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \n");
@@ -712,11 +710,68 @@ int main() {
   printOnCircQueue();
    printG(goldenHead);
    passingToCaja();
-   printC(cajaHead);*/
-  // printG(goldenHead);
-  // printG(cityHead);
-//   moveTurnoCaja();
-//   printC(cajaHead);
+   printC(cajaHead);
+   printG(goldenHead);
+   printG(cityHead);
+   moveTurnoCaja();
+   printC(cajaHead);
+}
+
+void doStep(){
+    int number = 0;
+    printf("Ingresa uno y enter para dar paso, cualquier otro par salir");
+    scanf("%d",&number);
+    if(number == 1){
+	 if( countStep == 0 ){
+	step();
+	countStep++;
+	doStep();
+	return;
+    }
+    setClientsOnList();
+    print();
+    doStep();
+    }
+}
+
+void graphStacks(Carreta* stack,FILE * file, int i){
+
+    FILE *f = file;
+    struct Carreta* temp = stack;
+    fprintf(f, "subgraph cluster%d {\n",i);
+    while(temp != NULL && temp->next != NULL) {
+	printf("grafica pila");
+	fprintf(f, " %d ", temp->noCarreta);
+	temp = temp->next;
+	fprintf(f, "-> %d ;\n",temp->noCarreta);
+    }
+    fprintf(f,"label = \" Pila no %d \" ; \n",i);
+    fprintf(f, "}\n");
+}
+
+void graphColaCliente(){
+}
+
+void graph(){
+    FILE *file = fopen("file.dot", "w");
+    if (file == NULL)
+    {
+	printf("Error opening file!\n");
+	exit(1);
+    }
+    fprintf(file, "digraph G { \n");
+    graphStacks(headStack0, file, 0);
+    graphStacks(headStack1, file, 1);
+    graphStacks(headStack2, file, 2);
+    graphStacks(headStack3, file, 3);
+    fprintf(file, "} \n");    
+    fclose(file);
+}
+
+int main() {
+    createInitials();
+    //doStep();
+    graph();
   return 0;
 }
 
