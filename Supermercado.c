@@ -66,21 +66,25 @@ void createCarretas(){
     }
   }
 }
-
-struct Node* getNewNode(int gen, int ag, int preg, int id, int prior){
-  struct Node* newNode
-    = (struct Node*)malloc(sizeof(struct Node));
-  newNode->gender = gen;
-  newNode->age = ag;
-  newNode->pregnant = preg;
-  newNode->id = id;
-  newNode->priority = prior;
-  newNode->prev = NULL;
-  newNode->next = NULL;
-  return newNode;
+void printOnCircQueue(){
+  struct Node* temp = headCirc;
+  while(temp->next != headCirc) {
+    printf("********\n");
+    printf("id %d \n",temp->id);
+    printf("edad %d \n", temp->age);
+    printf("prioridad %d \n", temp->priority);
+    printf("Carreta %d \n", temp->carretaId);
+    printf("Turno %d \n", temp->turnoCompra);
+    temp = temp->next;
+  }
+    printf("********\n");
+    printf("id %d \n",temp->id);
+    printf("prioridad %d \n", temp->priority);
+    printf("edad %d \n", temp->age);
+    printf("Carreta %d \n", temp->carretaId);
+    printf("Turno %d \n", temp->turnoCompra);
+    printf("\n");
 }
-
-
 struct Node* getNewNodeCirc(int gen, int ag, int preg, int id, int prior,int carreta, int turnQ){
   struct Node* newNode
     = (struct Node*)malloc(sizeof(struct Node));
@@ -94,6 +98,105 @@ struct Node* getNewNodeCirc(int gen, int ag, int preg, int id, int prior,int car
   newNode->prev = NULL;
   newNode->next = NULL;
   return newNode;
+}
+
+struct Node* getNewNode(int gen, int ag, int preg, int id, int prior){
+  struct Node* newNode
+    = (struct Node*)malloc(sizeof(struct Node));
+  newNode->gender = gen;
+  newNode->age = ag;
+  newNode->pregnant = preg;
+  newNode->id = id;
+  newNode->priority = prior;
+  newNode->prev = NULL;
+  newNode->next = NULL;
+  return newNode;
+}
+void enqueueForPayCiti(int gen, int ag, int preg, int id, int prior,
+		   int carreta, int turnQ){
+  struct Node* temp = goldenHead;
+  struct Node* newNode = getNewNodeCirc(gen, ag , preg, id, prior, carreta, turnQ);
+  if(goldenHead == NULL) {
+    goldenHead = newNode;
+    return;
+  }
+  while(temp->next != NULL) temp = temp->next;
+  temp->next = newNode;
+  newNode->prev = temp;
+  head = head;
+}
+
+void enqueueForPay(int gen, int ag, int preg, int id, int prior,
+		   int carreta, int turnQ){
+  struct Node* temp = cityHead;
+  struct Node* newNode = getNewNodeCirc(gen, ag , preg, id, prior, carreta, turnQ);
+  if(cityHead == NULL) {
+    cityHead = newNode;
+    return;
+  }
+  while(temp->next != NULL) temp = temp->next;
+  temp->next = newNode;
+  newNode->prev = temp;
+}
+
+void insertToPay(Node *nodo){
+  if(nodo->priority == 1){
+    enqueueForPay(nodo->gender, nodo->age, nodo->pregnant, nodo-> id,
+		      nodo->priority, nodo->carretaId,getRandom(3));
+  }else{
+    enqueueForPayCiti(nodo->gender, nodo->age, nodo->pregnant, nodo-> id,
+		      nodo->priority, nodo->carretaId,getRandom(3));
+  }
+  
+}
+
+
+struct Node* removeOnCircular(int turn){
+  printf("---------------------ENTER  ------------ \n");
+  struct Node* temp = headCirc;
+  struct Node* previous=headCirc;
+  struct Node* retorno;
+
+  while(temp->next != headCirc){
+    if(temp == headCirc) temp = temp->next;
+    if(temp->turnoCompra == turn){
+      previous->next=temp->next;
+      retorno = temp;
+      free(temp);
+      temp = NULL;
+      printf("---------------------FOUND  ------------ %d \n", retorno->turnoCompra);
+      insertToPay(retorno);
+      temp=previous;
+    }
+    previous = temp;
+    temp = temp->next;
+  }
+  // printOnCircQueue();
+  if( temp->next == headCirc && temp->turnoCompra == turn){
+      printf("----------HEADING--------- %d \n",headCirc->age);
+      printf("----------FINAL--------- %d \n", temp->age);
+      printf("----------FINAL--------- %d \n", previous->age);
+      previous->next = NULL;
+      previous->prev = NULL;
+      retorno = temp;
+      insertToPay(retorno);
+      free(temp);
+      temp = NULL;
+      previous->next = headCirc;
+      
+    }
+	/*printOnCircQueue();
+      if(headCirc->turnoCompra == turn){
+	printf("----------HEAD--------- %d \n", headCirc->age);
+      temp = headCirc;
+      temp = temp->next;
+      headCirc = temp;
+      free(temp);
+      temp = NULL;
+      printf("----------HEADING---------* %d \n",headCirc->age);
+      //printf("----------FINAL---------* %d \n", temp->age);
+      //      printf("----------FINAL---------* %d \n", previous->age);
+      }*/
 }
 
 void print() {
@@ -157,33 +260,6 @@ void insertMiddle(int gen, int ag, int preg, int id, int prior){
       newNode->next = temp;
     }
   }
-}
-
-void enqueueForPayCiti(int gen, int ag, int preg, int id, int prior,
-		   int carreta, int turnQ){
-  struct Node* temp = goldenHead;
-  struct Node* newNode = getNewNodeCirc(gen, ag , preg, id, prior, carreta, turnQ);
-  if(goldenHead == NULL) {
-    goldenHead = newNode;
-    return;
-  }
-  while(temp->next != NULL) temp = temp->next;
-  temp->next = newNode;
-  newNode->prev = temp;
-  head = head;
-}
-
-void enqueueForPay(int gen, int ag, int preg, int id, int prior,
-		   int carreta, int turnQ){
-  struct Node* temp = cityHead;
-  struct Node* newNode = getNewNodeCirc(gen, ag , preg, id, prior, carreta, turnQ);
-  if(cityHead == NULL) {
-    cityHead = newNode;
-    return;
-  }
-  while(temp->next != NULL) temp = temp->next;
-  temp->next = newNode;
-  newNode->prev = temp;
 }
 
 void printG(Node* goldenH) {
@@ -270,25 +346,6 @@ void setClientsOnIQueue(){
   }
 }
 
-void printOnCircQueue(){
-  struct Node* temp = headCirc;
-  while(temp->next != headCirc) {
-    printf("********\n");
-    printf("id %d \n",temp->id);
-    printf("edad %d \n", temp->age);
-    printf("prioridad %d \n", temp->priority);
-    printf("Carreta %d \n", temp->carretaId);
-    printf("Turno %d \n", temp->turnoCompra);
-    temp = temp->next;
-  }
-    printf("********\n");
-    printf("id %d \n",temp->id);
-    printf("prioridad %d \n", temp->priority);
-    printf("edad %d \n", temp->age);
-    printf("Carreta %d \n", temp->carretaId);
-    printf("Turno %d \n", temp->turnoCompra);
-    printf("\n");
-}
 
 void setClientsOnList(){
   int i = 0;
@@ -444,15 +501,19 @@ int main() {
   print();
   setClientsOnIQueue();
   printOnCircQueue();
-  /*  createGoldenCitizens();
+  createGoldenCitizens();
   printG(goldenHead);
   createCitizensForPay();
-  printG(cityHead);*/
+  printG(cityHead);
   iterateAsignCarreta();
   printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
   print();
   printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \n");
   printOnCircQueue();
+  removeOnCircular(0);
+  printOnCircQueue();
+  printf("************************************* \n");
+  printG(goldenHead);
+  printG(cityHead);
   return 0;
 }
-
