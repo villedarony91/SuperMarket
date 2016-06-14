@@ -80,4 +80,3 @@ int getRandom(int max){
   return rand() % max;
 }
 
-
