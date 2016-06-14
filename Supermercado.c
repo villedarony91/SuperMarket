@@ -151,11 +151,13 @@ void enqueueForPay(int gen, int ag, int preg, int id, int prior,
   newNode->prev = temp;
 }
 
-void insertToPay(Node *nodo){
+void insertToPay(Node *nodo, FILE *f){
   if(nodo->priority == 1){
+      fprintf(f,"Cliente%d pasando a cola de Normal \n",nodo->id);
     enqueueForPay(nodo->gender, nodo->age, nodo->pregnant, nodo-> id,
 		      nodo->priority, nodo->carretaId,getRandom(3));
   }else{
+            fprintf(f,"Cliente%d pasando a cola de pago Oro \n",nodo->id);
     enqueueForPayCiti(nodo->gender, nodo->age, nodo->pregnant, nodo-> id,
 		      nodo->priority, nodo->carretaId,getRandom(3));
   }
@@ -163,7 +165,8 @@ void insertToPay(Node *nodo){
 }
 
 
-struct Node* removeOnCircular(int turn){
+struct Node* removeOnCircular(int turn, FILE *f){
+    fprintf(f, "************ Clientes pasando a Cola de pago ************\n");
   printf("---------------------ENTER  ------------ \n");
   struct Node* temp = headCirc;
   struct Node* previous=headCirc;
@@ -177,7 +180,8 @@ struct Node* removeOnCircular(int turn){
       free(temp);
       temp = NULL;
       printf("---------------------FOUND  ------------ %d \n", retorno->turnoCompra);
-      insertToPay(retorno);
+
+	      insertToPay(retorno, f);
       temp=previous;
     }
     previous = temp;
@@ -190,7 +194,7 @@ struct Node* removeOnCircular(int turn){
       previous->next = NULL;
       previous->prev = NULL;
       retorno = temp;
-      insertToPay(retorno);
+      insertToPay(retorno, f);
       free(temp);
       temp = NULL;
       previous->next = headCirc;
@@ -408,146 +412,98 @@ struct Node* getClient(){
   }
 }
 
-void pop(Carreta *stack, int stackNo, FILE *file){
-    FILE *f = file;
-    printf("POOOOP \n");
-    printf("A sacar de la pila No. %d \n", stackNo);
-    struct Carreta *temp = stack;
-    if(stack->next == NULL){
-	switch(stackNo){
-	case 0:
-	    printf("1+++++++++++++++++++++++++Sacando Carreta No %d \n", headStack0->noCarreta);
-	    free(headStack0);
-	    headStack0 = NULL;
-	    stack = NULL;
-	    break;
-	    return;
-	case 1:
-	    fprintf(f,"Sacando Carreta No %d", headStack1->noCarreta);
-	    free(headStack1);
-	    headStack1 = NULL;
-	    stack = NULL;
-	    break;
-	    return;
-	case 2:
-	    fprintf(f,"Sacando Carreta No %d", headStack2->noCarreta);
-	    free(headStack2);
-	    headStack2 = NULL;
-	    stack = NULL;
-	    break;
-	    return;
-	case 3:
-	    fprintf(f,"Sacando Carreta No %d", headStack3->noCarreta);
-	    free(headStack3);
-	    headStack3 = NULL;
-	    stackNo = 5;
-	    break;
-	    return;
-	}
-	if(stack!=NULL && stack->next != NULL){
-	    temp = stack->next;}
-    }switch(stackNo){
-    case 0:
-	printf("+++++++++++++++++++++++++Sacando Carreta No %d \n", headStack0->noCarreta);
-	free(headStack0);
-	headStack0 = NULL;
-	headStack0 = temp;
-	printf("nueva cabeza %d \n", headStack0->noCarreta);
-	fprintf(f," Nueva cabeza No %d", temp->noCarreta);
-	break;
-    case 1:
-	fprintf(f,"+++Sacando Carreta No %d", headStack1->noCarreta);
-	free(headStack1);
-	headStack1 = NULL;
-	headStack1 = temp;
-	fprintf(f," Nueva cabeza No %d", temp->noCarreta);
-	break;
-    case 2:
-	fprintf(f,"+++Sacando Carreta No %d", headStack2->noCarreta);
-	free(headStack2);
-	headStack2 = NULL;
-	headStack2 = temp;
-	break;
-    case 3:
-	fprintf(f,"S+++acando Carreta No %d", headStack3->noCarreta);
-	free(headStack3);
-	headStack3 = NULL;
-	headStack3 = temp;
-	break;
-    }   
-    printf("POOOOP TERMINADO\n");
-}
-
-int getCarrId(Carreta *stack){
-  struct Carreta* temp = stack;
-  return stack->noCarreta;
-}
-
-int getStackNo(){
-    printf("getting stack NO \n");
-  if(headStack0 != NULL) return 0;
-  if(headStack1 != NULL) return 1;
-  if(headStack2 != NULL) return 2;
-  if(headStack3 != NULL) return 3;
-  return -1;
-}
-
-struct Carreta* getStack(int stackNo){
-  printf("getting stack \n");
-  switch(stackNo){
-  case 0:
-          printf("getting stack 0 \n");
-    return headStack0;
-    break;
-  case 1:
-          printf("getting stack 1\n");
-    return headStack1;
-    break;
-  case 2:
-          printf("getting stack 2 \n");
-    return headStack2;
-
-    break;
-  case 3:
-      printf("getting stack 3 \n");
-      return headStack3;
-    break;
-  }
-  
-  return NULL;
-}
   
 void insertOnCircular(Node* person){
   addOnCircular(person->gender, person->age, person->pregnant, person->id, person->priority,
 		person->carretaId, getRandom(5));
   
 }
+
+int getCarrNumber(){
+    int ret = -1;
+    if(headStack0 != NULL){
+	if(headStack0->next==NULL){
+	    ret = headStack0->noCarreta;
+	    free(headStack0);
+	    headStack0 = NULL;
+	    return ret;
+	}else{
+	    struct Carreta * temp = headStack0->next;
+	    ret = headStack0->noCarreta;
+	    headStack0 = temp;
+	    return ret;
+	}
+    }else{ret = -1;}
+    //1
+    if(headStack1 != NULL){
+	if(headStack1->next==NULL){
+	    ret = headStack1->noCarreta;
+	    free(headStack1);
+	    headStack1 = NULL;
+	    return ret;
+	}else{
+	    struct Carreta * temp = headStack1->next;
+	    ret = headStack1->noCarreta;
+	    headStack1 = temp;
+	    return ret;
+	}
+    }else{ret = -1;}
+//2
+    if(headStack2 != NULL){
+	if(headStack2->next==NULL){
+	    ret = headStack2->noCarreta;
+	    free(headStack2);
+	    headStack2 = NULL;
+	    return ret;
+	}else{
+	    struct Carreta * temp = headStack2->next;
+	    ret = headStack2->noCarreta;
+	    headStack2 = temp;
+	    return ret;
+	}
+    }else{ret = -1;}
+//3
+    if(headStack3 != NULL){
+	if(headStack3->next==NULL){
+	    ret = headStack3->noCarreta;
+	    free(headStack3);
+	    headStack3 = NULL;
+	    return ret;
+	}else{
+	    struct Carreta * temp = headStack3->next;
+	    ret = headStack3->noCarreta;
+	    headStack3 = temp;
+	    return ret;
+	}
+    }else{ret = -1;}
+
+    return ret;
+}
+
 void asignCarreta(FILE * file){
-  int stackId = getStackNo();
-  struct Carreta *stack;
-  struct Node *temp;
-  if(head != NULL && stackId != -1){
-    stack = getStack(stackId);
-    int carreta = getCarrId(stack);
-    printf("********imprimiendo numero ********%d PILA %d",carreta,stackId);
-    pop(stack, stackId, file);
-    printf("********imprimiendo numero ******** %d",carreta);
-    if(head->next != NULL){ temp = head->next;}
-    else {temp = NULL;}
-    head->carretaId = carreta;
-    insertOnCircular(head);
-    free(head);
-    head = NULL;
-    head = temp;
-    clientWaiting--;
-        printf("--------Esperando-------- %d \n",clientWaiting);
-        printf("********terminando assign ******** %d \n",carreta);
-  }else{
-      if(head != NULL)
-      {printf("No hay carretas disponibles, cliente en espera \n");}
-      if(stackId != -1)
-      {printf("Clientes agotados, carreta en espera \n");}
-  }
+    FILE * f = file;
+    struct Carreta *stack;
+    struct Node *temp;
+    if(head != NULL){
+	int carreta = getCarrNumber();
+	if(carreta == -1){
+	    printf("No hay carretas disponibles, cliente en espera \n");
+	    return;
+	}
+	if(head->next != NULL){ temp = head->next;}
+	else {temp = NULL;}
+	head->carretaId = carreta;
+	fprintf(f,"Cliente%d toma Carreta%d \n",head->id, carreta); 
+	insertOnCircular(head);
+	free(head);
+	head = NULL;
+	head = temp;
+	clientWaiting--;
+	printf("--------Esperando-------- %d \n",clientWaiting);
+	printf("********terminando assign ******** %d \n",carreta);
+    }else{
+	{printf("Clientes agotados, carreta en espera \n");}
+    }
 }
 
 struct Node *getQueueToPay(){
@@ -622,6 +578,7 @@ void iterateCreateCaja(){
 }
 
 void iterateAsignCarreta(FILE *f){
+    fprintf(f,"************ Asignacion Carreta ************ \n");
     int i = 0;
     while( i < carrId){
 	asignCarreta(f);
@@ -629,7 +586,7 @@ void iterateAsignCarreta(FILE *f){
     }
 }
 
-void passingToCaja(){
+void passingToCaja(FILE *f){
     struct Caja* temp = cajaHead;
     struct Node* client = getClientToPay();
     if(client == NULL){
@@ -644,51 +601,73 @@ void passingToCaja(){
 	    return;
     }else{
 	printf("empiezan a pasar \n");
-    temp->clients = 0;
-    temp->noCliente = client->id;
-    temp->noCarreta = client->carretaId;
-    temp->turno = getRandom(3);
-    temp->available = 1;
-    passingToCaja();
+	fprintf(f,"Cliente%d pasa a caja No.%d\n", client->id, temp->noCaja);
+	temp->clients = 0;
+	temp->noCliente = client->id;
+	temp->noCarreta = client->carretaId;
+	temp->turno = getRandom(3);
+	temp->available = 1;
+	passingToCaja(f);
     }
 }
 
-void releaseCarreta(Caja * toRelease){
+void releaseCarreta(Caja * toRelease, FILE *f){
     printf("entrando en release \n");
     struct Caja *temp = toRelease;
     switch(getRandom(4)){
     case 0:
 	if(temp->noCarreta != -1)
 	insertAtStack(temp->noCarreta, 0 , headStack0);
+	fprintf(f,"Cliente%d paga, se libera carreta No.%d en pila %d \n",
+		temp->noCliente,temp->noCarreta, 0);
+	printf("Cliente%d paga, se libera carreta No.%d en pila %d \n",
+		temp->noCliente,temp->noCarreta, 0);
+	
 	temp->noCliente = -1;
 	temp->clients = 0;
 	temp->turno = -1;
 	temp->available = 0;
 	temp->noCarreta = -1;
+	break;
     case 1:
 	if(temp->noCarreta != -1)
 	insertAtStack(temp->noCarreta, 1 , headStack1);
+	fprintf(f,"Cliente%d paga, se libera carreta No.%d en pila %d\n",
+		temp->noCliente,temp->noCarreta, 1);
+	printf("Cliente%d paga, se libera carreta No.%d en pila %d \n",
+		temp->noCliente,temp->noCarreta, 0);
 	temp->noCliente = -1;
 	temp->clients = 0;
 	temp->turno = -1;
 	temp->available = 0;
 	temp->noCarreta = -1;
+	break;
     case 2:
 	if(temp->noCarreta != -1)
 	insertAtStack(temp->noCarreta, 2 , headStack2);
+	fprintf(f,"Cliente%d paga, se libera carreta No.%d en pila %d \n",
+		temp->noCliente,temp->noCarreta, 2);
+		printf("Cliente%d paga, se libera carreta No.%d en pila %d \n",
+		temp->noCliente,temp->noCarreta, 0);
 	temp->noCliente = -1;
 	temp->clients = 0;
 	temp->turno = -1;
 	temp->available = 0;
 	temp->noCarreta = -1;
+	break;
     case 3:
 	if(temp->noCarreta != -1)
 	insertAtStack(temp->noCarreta, 3 , headStack3);
+	fprintf(f,"Cliente%d paga, se libera carreta No.%d en pila%d\n",
+		temp->noCliente,temp->noCarreta,3);
+		printf("Cliente%d paga, se libera carreta No.%d en pila %d \n",
+		temp->noCliente,temp->noCarreta, 0);
 	temp->noCliente = -1;
 	temp->clients = 0;
 	temp->turno = -1;
 	temp->available = 0;
 	temp->noCarreta = -1;
+	break;
     }
     printf("saliendo release \n");
 }
@@ -710,14 +689,15 @@ void moveTurnoCompra(){
     }
 } 
 
-void moveTurnoCaja(){
+void moveTurnoCaja(FILE *f){
+    fprintf(f,"************ Clientes pagando ************ \n");
     struct Caja* temp = cajaHead;
     struct Caja* aux;
     while(temp!= NULL && temp->next != NULL) {
 	printf("ciclo \n");
 	if(temp->turno == 0){
 	    printf("validated \n");
-	    releaseCarreta(temp);
+	    releaseCarreta(temp,f);
 	}else{
 	    if(temp->turno > 0){
 		int prevTurno = temp->turno;
@@ -920,67 +900,66 @@ void createInitials(){
 }
 
 void step(FILE *f){
-  iterateAsignCarreta(f);
-  printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-  print();
-  printf("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx \n");
-  printOnCircQueue();
-  removeOnCircular(0);
-  printOnCircQueue();
-  printf("************************************* \n");
-  moveTurnoCompra();
-  printOnCircQueue();
-  printf("************************************* 1\n");
-   printG(goldenHead);
-   passingToCaja();
-   printf("*************************************7 \n");
-   printC(cajaHead);
-   printG(goldenHead);
-   printf("*************************************10 \n");
-   printG(cityHead);
-   moveTurnoCaja();
-   printf("*************************************15 \n");
-   printC(cajaHead);
-   graph();
-   compileDot();
-
+    iterateAsignCarreta(f);
+    printOnCircQueue();
+    removeOnCircular(0,f);
+    printOnCircQueue();
+    moveTurnoCompra();
+    printOnCircQueue();
+    printG(goldenHead);
+    fprintf(f, "************ Clientes pasando a Caja ************\n");
+    passingToCaja(f);
+    printC(cajaHead);
+    printG(goldenHead);
+    printG(cityHead);
+    moveTurnoCaja(f);
+    printC(cajaHead);
+    graph();
+    compileDot();
 }
-void doStep(int number){
-        FILE *file = fopen("log.txt", "w");
-    if (file == NULL)
-    {
-	printf("Error opening file!\n");
-	exit(1);
-    }
+void doStep(int number, FILE * file){
     if(number == 1){
 	if( countStep == 0 ){
 	    step(file);
-	    countStep++;
 	    compileDot();
+	    fprintf(file, "\n************************************\n");
+	    fprintf(file, "*            Paso %d               *\n",countStep);
+	    fprintf(file, "************************************\n");
+	    countStep++;
 	    step(file);
 	    return;
 	}
 	setClientsOnList();
 	print();
+	fprintf(file, "\n************************************\n");
+	fprintf(file, "*            Paso %d                *\n",countStep);
+	fprintf(file, "************************************\n");
+countStep++;
 	step(file);
     }
-        fclose(file);
 }
 
-void getStep(){
+void getStep(FILE *file){
     int number = 0;
-    printf("Ingresa uno y enter para dar paso, cualquier otro par salir");
+    printf("Ingresa uno y enter para dar paso, cualquier otro para salir");
     scanf("%d",&number);
     if(number == 1){
-	doStep(1);
-	getStep();
+	doStep(1,file);
+	getStep(file);
     }else{
 	exit(0);
     }
 }
 
 int main() {
+    FILE *file = fopen("log.txt", "w");
+    if (file == NULL)
+    {
+	printf("Error opening file!\n");
+	exit(1);
+    }
     createInitials();
-    getStep();
+    getStep(file);
+    	fclose(file);
   return 0;
 }
