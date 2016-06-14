@@ -84,6 +84,7 @@ void printOnCircQueue(){
     printf("Turno %d \n", temp->turnoCompra);
     temp = temp->next;
   }
+  if(temp != NULL){
     printf("********\n");
     printf("id %d \n",temp->id);
     printf("prioridad %d \n", temp->priority);
@@ -91,6 +92,7 @@ void printOnCircQueue(){
     printf("Carreta %d \n", temp->carretaId);
     printf("Turno %d \n", temp->turnoCompra);
     printf("\n");
+  }
 }
 struct Node* getNewNodeCirc(int gen, int ag, int preg, int id, int prior,int carreta, int turnQ){
   struct Node* newNode
@@ -208,7 +210,7 @@ struct Node* removeOnCircular(int turn){
 
 void print() {
   struct Node* temp = head;
-  printf("Forward: ");
+  printf("Listado de clientes: ");
   while(temp != NULL) {
     printf("********\n");
     printf("id %d \n",temp->id);
@@ -749,7 +751,99 @@ void graphStacks(Carreta* stack,FILE * file, int i){
     fprintf(f, "}\n");
 }
 
-void graphColaCliente(){
+void graphColaCliente(FILE * file){
+    FILE *f = file;
+    struct Node* temp = head;
+    fprintf(f, "subgraph cluster4 {\n");
+    while(temp != NULL && temp->next != NULL) {
+	fprintf(f, "Cliente%d",temp->id);
+	fprintf(f,"->");
+	temp = temp->next;
+	fprintf(f,"Cliente%d\n", temp->id);	
+    }
+    fprintf(f, "label = \" Cola Clientes \"\n");
+    fprintf(f,"}\n");
+}
+
+void graphPersonasCompras(FILE *file){
+    FILE *f = file;
+    struct Node* temp = headCirc;
+    fprintf(f, "subgraph cluster5 {\n");
+    while(temp->next != headCirc) {
+	int previous = temp->id;
+	fprintf(f,"node%d[label = \"Cliente%d \\n Carreta %d \"];\n",
+		temp->id, temp->id, temp->carretaId); 
+	temp = temp->next;
+	fprintf(f,"node%d[label =\" Cliente%d \\n Carreta %d\"];\n",
+		temp->id, temp->id, temp->carretaId); 
+	fprintf(f,"node%d",previous);
+	fprintf(f,"->");
+	fprintf(f,"node%d; \n",temp->id);
+  }
+  if(temp != NULL){
+      int previous = temp->id;
+      fprintf(f,"node%d[label = \"Cliente%d \\n Carreta %d \"];\n",
+		temp->id, temp->id, temp->carretaId); 
+	temp = temp->next;
+	fprintf(f,"node%d[label =\" Cliente%d \\n Carreta %d\"];\n",
+		temp->id, temp->id, temp->carretaId); 
+	fprintf(f,"node%d",previous);
+	fprintf(f,"->");
+	fprintf(f,"node%d; \n",temp->id);
+  }
+  fprintf(f, "label = \" Lista personas comprando \"\n");
+  fprintf(f,"}\n");
+}
+
+void graphColasToPay(FILE *file, Node *queue,int flag){
+    FILE *f = file;
+    struct Node* temp = queue;
+    int i = 6 + flag;
+    fprintf(f, "subgraph cluster%d {\n",i);
+    while(temp != NULL && temp->next != NULL) {
+	fprintf(f, "Cliente%d",temp->id);
+	fprintf(f,"->");
+	temp = temp->next;
+	fprintf(f,"Cliente%d\n", temp->id);	
+    }
+    if(flag == 0)
+	fprintf(f, "label = \" Cola Clientes oro para pagar\"\n");
+    else
+	fprintf(f, "label = \" Cola Clientes para pagar \"\n");
+    fprintf(f,"}\n");
+}
+
+void graphCajas(FILE *file){
+    FILE *f = file;
+    struct Caja* temp = cajaHead;
+    const char *libre = "libre";
+    const char *ocup = "ocupada";
+    fprintf(f, "subgraph cluster8{\n");
+    while(temp->next != NULL) {
+	int previous = temp->noCaja;
+	if(temp->available == 0)
+	    fprintf(f,"node%d[label = \"Caja%d \\n  %s \"];\n",
+		    temp->noCaja, temp->noCaja, libre);
+	else
+	    fprintf(f,"node%d[label = \"-Caja%d \\n - %s \"];\n",
+		    temp->noCaja, temp->noCaja, libre);	    
+	temp = temp->next;
+	int actual  = temp->noCaja;
+	if(temp->available == 0)
+	    fprintf(f,"node%d[label = \"Caja%d \\n  %s \"];\n",
+		    temp->noCaja, temp->noCaja, libre);
+	else
+	    fprintf(f,"node%d[label = \"-Caja%d \\n - %s \"];\n",
+		    temp->noCaja, temp->noCaja, libre);
+	fprintf(f,"node%d",previous);
+	fprintf(f,"->");
+	fprintf(f,"node%d ; \n",actual);
+	fprintf(f,"node%d",actual);
+	fprintf(f,"->");
+	fprintf(f,"node%d ; \n",previous);
+    }
+    fprintf(f, "label = \" Cajas \"\n");
+    fprintf(f,"}\n");
 }
 
 void graph(){
@@ -764,6 +858,11 @@ void graph(){
     graphStacks(headStack1, file, 1);
     graphStacks(headStack2, file, 2);
     graphStacks(headStack3, file, 3);
+    graphColaCliente(file);
+    graphPersonasCompras(file);
+    graphColasToPay(file, goldenHead, 0);
+    graphColasToPay(file, cityHead, 1);
+    graphCajas(file);
     fprintf(file, "} \n");    
     fclose(file);
 }
@@ -774,4 +873,3 @@ int main() {
     graph();
   return 0;
 }
-
