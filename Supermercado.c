@@ -167,56 +167,54 @@ void insertToPay(Node *nodo, FILE *f){
 
 struct Node* removeOnCircular(int turn, FILE *f){
     fprintf(f, "************ Clientes pasando a Cola de pago ************\n");
-  printf("---------------------ENTER  ------------ \n");
-  struct Node* temp = headCirc;
-  struct Node* previous=headCirc;
-  struct Node* retorno;
+    printf("---------------------ENTER  ------------ \n");
+    struct Node* current = headCirc;
+    Node * prev;
+    
+   if(headCirc==NULL) {
+      return;
+   } 
+   if(headCirc->turnoCompra == turn) {
+      if(headCirc->next != headCirc) {
+         current = headCirc;
+         while(current->next!=headCirc) {
+            current = current->next;
+         }
+	 insertToPay(headCirc,f);
+         current->next = headCirc->next;
+         headCirc = headCirc->next;
+	 removeOnCircular(0,f);
+         return;
+      }else {
+	  insertToPay(headCirc,f);
+	  headCirc = NULL;
+	 return;
+      }
+   }else if(headCirc->turnoCompra != turn && headCirc->next == NULL) {
+      return;
+   }
+        
+   current = headCirc;
+   
+   while(current->next != headCirc && current->turnoCompra != turn) {
+      prev = current;
+      current = current->next;
+   }        
 
-  while(temp != NULL && temp->next != headCirc){
-    if(temp == headCirc) temp = temp->next;
-    if(temp->turnoCompra == turn){
-      previous->next=temp->next;
-      retorno = temp;
-      free(temp);
-      temp = NULL;
-      printf("---------------------FOUND  ------------ %d \n", retorno->turnoCompra);
+   if(current->turnoCompra == turn) {
+      prev->next = prev->next->next;
+      insertToPay(current, f);
+      free(current);
+      removeOnCircular(0,f);
+   }
 
-	      insertToPay(retorno, f);
-      temp=previous;
-    }
-    previous = temp;
-    temp = temp->next;
-  }
-  if( temp != NULL && temp->next == headCirc && temp->turnoCompra == turn){
-      printf("----------HEADING--------- %d \n",headCirc->age);
-      printf("----------FINAL--------- %d \n", temp->age);
-      printf("----------FINAL--------- %d \n", previous->age);
-      previous->next = NULL;
-      previous->prev = NULL;
-      retorno = temp;
-      insertToPay(retorno, f);
-      free(temp);
-      temp = NULL;
-      previous->next = headCirc;
-      
-    }
-	/*printOnCircQueue();
-      if(headCirc->turnoCompra == turn){
-	printf("----------HEAD--------- %d \n", headCirc->age);
-      temp = headCirc;
-      //temp = temp->next;
-      headCirc = temp->next;
-      free(temp);
-      temp = NULL;
-      printf("----------HEADING---------* %d \n",headCirc->age);
-      //printf("----------FINAL---------* %d \n", temp->age);
-      //      printf("----------FINAL---------* %d \n", previous->age);
-      }*/
+
 }
 
-void print() {
+void print(FILE *f) {
   struct Node* temp = head;
   printf("Listado de clientes: ");
+  fprintf(f, " ************ Listado de clientes en espera:************\n");
   while(temp != NULL) {
     printf("********\n");
     printf("id %d \n",temp->id);
@@ -224,6 +222,7 @@ void print() {
     printf("prioridad %d \n", temp->priority);
     printf("embarazado %d \n", temp->pregnant);
     printf("genero %d \n", temp->gender);
+    fprintf(f,"Cliente%d prioridad%d\n",temp->id, temp->priority);
     temp = temp->next;
     head = head;
   }
@@ -309,11 +308,12 @@ void printC(Caja* goldenH) {
 } 
 
 
-void printStack(Carreta* stack) {
+void printStack(Carreta* stack,FILE *f) {
   struct Carreta* temp = stack;
   while(temp != NULL) {
     printf("\n********Carreta**********\n");
     printf("Carreta %d \n",temp->noCarreta);
+    fprintf(f,"Carreta %d \n",temp->noCarreta);
     temp = temp->next;
   }
   printf("\n");
@@ -342,7 +342,7 @@ void addOnCircular(int gen, int ag, int preg, int id, int prior, int numCarreta,
     newNode->next = headCirc;
 }
 
-void createClient(int flag){
+void createClient(int flag, FILE *f){
   int gender = getRandom(2);
   int pregnant = getRandom(2);
   int age = getRandom(100);
@@ -354,9 +354,13 @@ void createClient(int flag){
     priority = 0;
   }
   if(flag == 0){
-  if(priority == 1){insertAtTail(gender, age, pregnant, clientId++, priority);}
-  else{insertMiddle(gender, age, pregnant, clientId++, priority);}
-  }
+      if(priority == 1)
+      {insertAtTail(gender, age, pregnant, clientId++, priority);
+	  fprintf(f,"Cliente%d, prioridad %d\n",clientId, priority);
+		  }
+	  else{insertMiddle(gender, age, pregnant, clientId++, priority);
+	      fprintf(f,"Cliente%d, prioridad %d\n",clientId, priority);}
+	  }
   if(flag == 1){
     int queueTurn = getRandom(5);
     addOnCircular(gender, age, pregnant, clientId++, priority,carrId++,queueTurn);
@@ -369,30 +373,31 @@ void createClient(int flag){
   }
 }
 
-void setClientsOnIQueue(){
+void setClientsOnIQueue(FILE *f){
+    fprintf(f, "************ lista por prioridad de clientes ************\n");
   int i = 0;
   int perCompras = getPerCompras();
   for(i ; i < perCompras ; i++){
-    createClient(1);
+      createClient(1,f);
   }
 }
 
 
-void setClientsOnList(){
+void setClientsOnList(FILE *f){
   int i = 0;
   int clientNumber = getClientNumber();
   for(i ; i < clientNumber ; i++){
-    createClient(0);
+      createClient(0,f);
     clientWaiting++;
     printf("--------Esperando-------- %d \n",clientWaiting);
   }
 }
 
-void createCitizensForPay(){
+void createCitizensForPay(FILE * f){
   int i;
   int city = getCitizen();
   for(i = 0 ; i < city ; i++){
-    createClient(2);
+      createClient(2,f);
   }
 }
 
@@ -413,9 +418,11 @@ struct Node* getClient(){
 }
 
   
-void insertOnCircular(Node* person){
+void insertOnCircular(Node* person, FILE *f){
+    int turn = getRandom(5);
   addOnCircular(person->gender, person->age, person->pregnant, person->id, person->priority,
-		person->carretaId, getRandom(5));
+		person->carretaId, turn);
+  fprintf(f,"Cliente%d toma Carreta%d, pasa a comprar con turno %d \n",head->id, person->carretaId, turn); 
   
 }
 
@@ -493,8 +500,7 @@ void asignCarreta(FILE * file){
 	if(head->next != NULL){ temp = head->next;}
 	else {temp = NULL;}
 	head->carretaId = carreta;
-	fprintf(f,"Cliente%d toma Carreta%d \n",head->id, carreta); 
-	insertOnCircular(head);
+	insertOnCircular(head, f);
 	free(head);
 	head = NULL;
 	head = temp;
@@ -601,12 +607,13 @@ void passingToCaja(FILE *f){
 	    return;
     }else{
 	printf("empiezan a pasar \n");
-	fprintf(f,"Cliente%d pasa a caja No.%d\n", client->id, temp->noCaja);
 	temp->clients = 0;
 	temp->noCliente = client->id;
 	temp->noCarreta = client->carretaId;
 	temp->turno = getRandom(3);
 	temp->available = 1;
+	fprintf(f,"Cliente%d pasa a caja No.%d con turno%d\n", client->id, temp->noCaja,
+	    temp->turno);
 	passingToCaja(f);
     }
 }
@@ -755,22 +762,22 @@ void graphPersonasCompras(FILE *file){
     {
 	while(temp->next != headCirc) {
 	    int previous = temp->id;
-	    fprintf(f,"node%d[label = \"Cliente%d \\n Carreta %d \"];\n",
-		    temp->id, temp->id, temp->carretaId); 
+	    fprintf(f,"node%d[label = \"Cliente%d \\n Carreta %d \\n turno %d \"];\n",
+		    temp->id, temp->id, temp->carretaId, temp->turnoCompra); 
 	    temp = temp->next;
-	    fprintf(f,"node%d[label =\" Cliente%d \\n Carreta %d\"];\n",
-		    temp->id, temp->id, temp->carretaId); 
+	    fprintf(f,"node%d[label =\" Cliente%d \\n Carreta %d \\n turnoCompra %d\"];\n",
+		    temp->id, temp->id, temp->carretaId, temp->turnoCompra); 
 	    fprintf(f,"node%d",previous);
 	    fprintf(f,"->");
 	    fprintf(f,"node%d; \n",temp->id);
 	}
 	if(temp != NULL){
 	    int previous = temp->id;
-	    fprintf(f,"node%d[label = \"Cliente%d \\n Carreta %d \"];\n",
-		    temp->id, temp->id, temp->carretaId); 
+	    fprintf(f,"node%d[label = \"Cliente%d \\n Carreta %d \\n turno %d\"];\n",
+		    temp->id, temp->id, temp->carretaId, temp->turnoCompra); 
 	    temp = temp->next;
-	    fprintf(f,"node%d[label =\" Cliente%d \\n Carreta %d\"];\n",
-		    temp->id, temp->id, temp->carretaId); 
+	    fprintf(f,"node%d[label =\" Cliente%d \\n Carreta %d \\n turno %d\"];\n",
+		    temp->id, temp->id, temp->carretaId,temp->turnoCompra); 
 	    fprintf(f,"node%d",previous);
 	    fprintf(f,"->");
 	    fprintf(f,"node%d; \n",temp->id);
@@ -810,30 +817,30 @@ void graphCajas(FILE *file){
     fprintf(f, "subgraph cluster8{\n");
     if(temp != NULL && temp->next == NULL){
 	if(temp->available == 0){
-	    fprintf(f,"Node%d[label = \"Caja%d \\n  %s \"];\n",
-		    temp->noCaja, temp->noCaja, libre);
+	    fprintf(f,"Node%d[label = \"Caja%d \\n  %s \\n Turno %d\"];\n",
+		    temp->noCaja, temp->noCaja, libre, temp->turno);
 	}
 	else{
-	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \"];\n",
-		    temp->noCaja, temp->noCaja, ocup);
+	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \\n Turno %d \"];\n",
+		    temp->noCaja, temp->noCaja, ocup, temp->turno);
 	}
     }
     while(temp != NULL && temp->next != NULL) {
 	int previous = temp->noCaja;
 	if(temp->available == 0)
-	    fprintf(f,"Node%d[label = \"Caja%d \\n  %s \"];\n",
-		    temp->noCaja, temp->noCaja, libre);
+	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \\n Turno %d \"];\n",
+		    temp->noCaja, temp->noCaja, ocup, temp->turno);
 	else
-	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \"];\n",
-		    temp->noCaja, temp->noCaja, ocup);	    
+	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \\n Turno %d \"];\n",
+		    temp->noCaja, temp->noCaja, ocup, temp->turno);    
 	temp = temp->next;
 	int actual  = temp->noCaja;
 	if(temp->available == 0)
-	    fprintf(f,"Node%d[label = \"Caja%d \\n  %s \"];\n",
-		    temp->noCaja, temp->noCaja, libre);
+	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \\n Turno %d \"];\n",
+		    temp->noCaja, temp->noCaja, ocup, temp->turno);
 	else
-	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \"];\n",
-		    temp->noCaja, temp->noCaja, ocup);
+	     fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \\n Turno %d \"];\n",
+		    temp->noCaja, temp->noCaja, ocup, temp->turno);
 	fprintf(f,"Node%d",previous);
 	fprintf(f,"->");
 	fprintf(f,"Node%d ; \n",actual);
@@ -874,38 +881,43 @@ void compileDot(){
     system("xdg-open file.jpg");
 }
 
-void createInitials(){
-  createCarretas();
-  printf("************ pila 1 ************");
-  printStack(headStack0);
-  printf("************ pila 2 ************");
-  printStack(headStack1);
-  printf("************ pila 3 ************");
-  printStack(headStack2);
-  printf("************ pila 4 ************"); 
-  printStack(headStack3);
-  setClientsOnList();
-  print();
-  setClientsOnIQueue();
-  printOnCircQueue();
-  createGoldenCitizens();
-  printG(goldenHead);
-  createCitizensForPay();
-  printG(cityHead);
-  printG(cityHead);
-  iterateCreateCaja();
-  printC(cajaHead);
-  graph();
-  compileDot();
+void createInitials(FILE *f){
+    fprintf(f, "\n************************************\n");
+    fprintf(f, "*        Parametros iniciales      *\n");
+    fprintf(f, "************************************\n");
+    createCarretas();
+    printf("************ pila 1 ************");
+    fprintf(f,"************ pila 0 ************\n");
+    printStack(headStack0,f);
+    fprintf(f,"************ pila 1 ************\n");
+    printf("************ pila 2 ************");
+    printStack(headStack1,f);
+    fprintf(f,"************ pila 2 ************\n");
+    printf("************ pila 3 ************");
+    printStack(headStack2,f);
+    fprintf(f,"************ pila 3 ************\n");
+    printf("************ pila 4 ************"); 
+    printStack(headStack3,f);
+    setClientsOnList(f);
+    print(f);
+    setClientsOnIQueue(f);
+    printOnCircQueue();
+    createGoldenCitizens(f);
+    printG(goldenHead);
+    createCitizensForPay(f);
+    printG(cityHead);
+    iterateCreateCaja();
+    printC(cajaHead);
+    graph();
+    compileDot();
 }
 
 void step(FILE *f){
     iterateAsignCarreta(f);
-    printOnCircQueue();
+    printOnCircQueue(f);
     removeOnCircular(0,f);
-    printOnCircQueue();
     moveTurnoCompra();
-    printOnCircQueue();
+    printOnCircQueue(f);
     printG(goldenHead);
     fprintf(f, "************ Clientes pasando a Caja ************\n");
     passingToCaja(f);
@@ -929,12 +941,12 @@ void doStep(int number, FILE * file){
 	    step(file);
 	    return;
 	}
-	setClientsOnList();
-	print();
+	setClientsOnList(file);
+	print(file);
 	fprintf(file, "\n************************************\n");
 	fprintf(file, "*            Paso %d                *\n",countStep);
 	fprintf(file, "************************************\n");
-countStep++;
+	countStep++;
 	step(file);
     }
 }
@@ -958,7 +970,7 @@ int main() {
 	printf("Error opening file!\n");
 	exit(1);
     }
-    createInitials();
+    createInitials(file);
     getStep(file);
     	fclose(file);
   return 0;
