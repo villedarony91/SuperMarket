@@ -73,7 +73,7 @@ void createCarretas(){
     }
   }
 }
-void printOnCircQueue(){
+void printOnCircQueue(FILE * f){
     struct Node* temp = headCirc;
     if(temp != NULL)
     {
@@ -84,7 +84,11 @@ void printOnCircQueue(){
 	    printf("prioridad %d \n", temp->priority);
 	    printf("Carreta %d \n", temp->carretaId);
 	    printf("Turno %d \n", temp->turnoCompra);
+	    fprintf(f," Cliente%d, carreta%d turno%d, prioridad%d \n",
+		    temp->id, temp->carretaId, temp->turnoCompra, temp->priority);
+		    
 	    temp = temp->next;
+	    
 	}
 	if(temp != NULL){
 	    printf("********\n");
@@ -94,6 +98,9 @@ void printOnCircQueue(){
 	    printf("Carreta %d \n", temp->carretaId);
 	    printf("Turno %d \n", temp->turnoCompra);
 	    printf("\n");
+	    fprintf(f," Cliente%d, carreta%d turno%d, prioridad%d \n",
+		    temp->id, temp->carretaId, temp->turnoCompra, temp->priority);
+
 	}
     }
 }
@@ -276,7 +283,7 @@ void insertMiddle(int gen, int ag, int preg, int id, int prior){
   }
 }
 
-void printG(Node* goldenH) {
+void printG(Node* goldenH,FILE *f) {
   struct Node* temp = goldenH;
   printf("Forward: ");
   while(temp != NULL) {
@@ -286,6 +293,7 @@ void printG(Node* goldenH) {
     printf("prioridad %d \n", temp->priority);
     printf("embarazado %d \n", temp->pregnant);
     printf("genero %d \n", temp->gender);
+    fprintf(f,"Cliente%d, prioridad%d\n",temp->id, temp->priority);
     temp = temp->next;
   }
   printf("\n");
@@ -356,15 +364,13 @@ void createClient(int flag, FILE *f){
   if(flag == 0){
       if(priority == 1)
       {insertAtTail(gender, age, pregnant, clientId++, priority);
-	  fprintf(f,"Cliente%d, prioridad %d\n",clientId, priority);
 		  }
 	  else{insertMiddle(gender, age, pregnant, clientId++, priority);
-	      fprintf(f,"Cliente%d, prioridad %d\n",clientId, priority);}
 	  }
+  }
   if(flag == 1){
     int queueTurn = getRandom(5);
     addOnCircular(gender, age, pregnant, clientId++, priority,carrId++,queueTurn);
-    printf("added");
   }
   if(flag == 2){
     age = getRandom(59);
@@ -374,7 +380,6 @@ void createClient(int flag, FILE *f){
 }
 
 void setClientsOnIQueue(FILE *f){
-    fprintf(f, "************ lista por prioridad de clientes ************\n");
   int i = 0;
   int perCompras = getPerCompras();
   for(i ; i < perCompras ; i++){
@@ -393,7 +398,7 @@ void setClientsOnList(FILE *f){
   }
 }
 
-void createCitizensForPay(FILE * f){
+void createCitizensForPay(FILE *f){
   int i;
   int city = getCitizen();
   for(i = 0 ; i < city ; i++){
@@ -817,8 +822,8 @@ void graphCajas(FILE *file){
     fprintf(f, "subgraph cluster8{\n");
     if(temp != NULL && temp->next == NULL){
 	if(temp->available == 0){
-	    fprintf(f,"Node%d[label = \"Caja%d \\n  %s \\n Turno %d\"];\n",
-		    temp->noCaja, temp->noCaja, libre, temp->turno);
+	    fprintf(f,"Node%d[label = \"Caja%d \\n  %s %d\"];\n",
+		    temp->noCaja, temp->noCaja, libre);
 	}
 	else{
 	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \\n Turno %d \"];\n",
@@ -828,16 +833,16 @@ void graphCajas(FILE *file){
     while(temp != NULL && temp->next != NULL) {
 	int previous = temp->noCaja;
 	if(temp->available == 0)
-	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \\n Turno %d \"];\n",
-		    temp->noCaja, temp->noCaja, ocup, temp->turno);
+	    fprintf(f,"Node%d[label = \"-Caja%d \\n  %s\"];\n",
+		    temp->noCaja, temp->noCaja, libre);
 	else
 	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \\n Turno %d \"];\n",
 		    temp->noCaja, temp->noCaja, ocup, temp->turno);    
 	temp = temp->next;
 	int actual  = temp->noCaja;
 	if(temp->available == 0)
-	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \\n Turno %d \"];\n",
-		    temp->noCaja, temp->noCaja, ocup, temp->turno);
+	    fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \"];\n",
+		    temp->noCaja, temp->noCaja, libre);
 	else
 	     fprintf(f,"Node%d[label = \"-Caja%d \\n - %s \\n Turno %d \"];\n",
 		    temp->noCaja, temp->noCaja, ocup, temp->turno);
@@ -850,6 +855,30 @@ void graphCajas(FILE *file){
     }
     fprintf(f, "label = \" Cajas \"\n");
     fprintf(f,"}\n");
+}
+
+void writeLogCajas(FILE *file){
+    struct Caja* temp = cajaHead;
+    const char *libre = "libre";
+    const char *ocup = "ocupada";
+    if(temp != NULL && temp->next == NULL){
+	if(temp->available == 0){
+	    fprintf(file,"Caja%d  %s\n", temp->noCaja, libre);
+	}
+	else{
+	    fprintf(file,"Caja%d   %s  Turno %d Cliente%d\n", temp->noCaja, ocup, temp->turno, temp->noCliente);
+	}
+    }
+    while(temp != NULL && temp->next != NULL) {
+	if(temp->available == 0){
+	    fprintf(file,"Caja%d   %s\n", temp->noCaja, libre);
+	}
+	else{
+	    fprintf(file,"Caja%d  %s \\n Turno %d Cliente%d\n", temp->noCaja, ocup, temp->turno, temp->noCliente);
+	}
+	temp = temp->next;
+        
+    }
 }
 
 void graph(){
@@ -901,12 +930,17 @@ void createInitials(FILE *f){
     setClientsOnList(f);
     print(f);
     setClientsOnIQueue(f);
-    printOnCircQueue();
+    fprintf(f,"************ Clientes de Compras ************\n");
+    printOnCircQueue(f);
+    fprintf(f,"************ Clientes en cola de Oro ************\n");
     createGoldenCitizens(f);
-    printG(goldenHead);
+    printG(goldenHead,f);
+    fprintf(f,"************ Clientes en Cola normal ************\n");
     createCitizensForPay(f);
-    printG(cityHead);
+    printG(cityHead,f);
+    fprintf(f,"************ Cajas ************\n");
     iterateCreateCaja();
+    writeLogCajas(f);
     printC(cajaHead);
     graph();
     compileDot();
@@ -914,16 +948,18 @@ void createInitials(FILE *f){
 
 void step(FILE *f){
     iterateAsignCarreta(f);
+    fprintf(f,"************ Clientes de compras ************\n");
     printOnCircQueue(f);
     removeOnCircular(0,f);
     moveTurnoCompra();
-    printOnCircQueue(f);
-    printG(goldenHead);
+    fprintf(f,"************ Cola de clientes de oro ************\n");
+    printG(goldenHead,f);
+    fprintf(f,"************ Cola de clients normal ************\n");
+    printG(cityHead,f);
     fprintf(f, "************ Clientes pasando a Caja ************\n");
     passingToCaja(f);
-    printC(cajaHead);
-    printG(goldenHead);
-    printG(cityHead);
+    fprintf(f, "************ Cajas ************\n");
+    writeLogCajas(f);
     moveTurnoCaja(f);
     printC(cajaHead);
     graph();
@@ -932,22 +968,20 @@ void step(FILE *f){
 void doStep(int number, FILE * file){
     if(number == 1){
 	if( countStep == 0 ){
-	    step(file);
-	    compileDot();
-	    fprintf(file, "\n************************************\n");
+	    fprintf(file, "\n***********************************\n");
 	    fprintf(file, "*            Paso %d               *\n",countStep);
 	    fprintf(file, "************************************\n");
-	    countStep++;
 	    step(file);
+	    countStep++;
 	    return;
 	}
-	setClientsOnList(file);
-	print(file);
 	fprintf(file, "\n************************************\n");
 	fprintf(file, "*            Paso %d                *\n",countStep);
 	fprintf(file, "************************************\n");
-	countStep++;
+	setClientsOnList(file);
+	print(file);
 	step(file);
+	countStep++;
     }
 }
 
