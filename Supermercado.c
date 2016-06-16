@@ -874,7 +874,7 @@ void writeLogCajas(FILE *file){
 	    fprintf(file,"Caja%d   %s\n", temp->noCaja, libre);
 	}
 	else{
-	    fprintf(file,"Caja%d  %s \\n Turno %d Cliente%d\n", temp->noCaja, ocup, temp->turno, temp->noCliente);
+	    fprintf(file,"Caja%d  %s  Turno %d Cliente%d\n", temp->noCaja, ocup, temp->turno, temp->noCliente);
 	}
 	temp = temp->next;
         
@@ -965,7 +965,13 @@ void step(FILE *f){
     graph();
     compileDot();
 }
-void doStep(int number, FILE * file){
+void doStep(int number){
+    FILE *file = fopen("log.txt","a");
+        if (file == NULL)
+    {
+	printf("Error abriendo file!\n");
+	exit(1);
+    }
     if(number == 1){
 	if( countStep == 0 ){
 	    fprintf(file, "\n***********************************\n");
@@ -973,6 +979,7 @@ void doStep(int number, FILE * file){
 	    fprintf(file, "************************************\n");
 	    step(file);
 	    countStep++;
+	    fclose(file);
 	    return;
 	}
 	fprintf(file, "\n************************************\n");
@@ -981,17 +988,18 @@ void doStep(int number, FILE * file){
 	setClientsOnList(file);
 	print(file);
 	step(file);
+	fclose(file);
 	countStep++;
     }
 }
 
-void getStep(FILE *file){
+void getStep(){
     int number = 0;
     printf("Ingresa uno y enter para dar paso, cualquier otro para salir");
     scanf("%d",&number);
     if(number == 1){
-	doStep(1,file);
-	getStep(file);
+	doStep(1);
+	getStep();
     }else{
 	exit(0);
     }
@@ -1001,11 +1009,14 @@ int main() {
     FILE *file = fopen("log.txt", "w");
     if (file == NULL)
     {
-	printf("Error opening file!\n");
+	printf("Error abriendo file!\n");
 	exit(1);
     }
+    fclose(file);
+    FILE *f = fopen("log.txt", "a");
     createInitials(file);
-    getStep(file);
-    	fclose(file);
+    fclose(f);
+    getStep();
+    	
   return 0;
 }

@@ -1,0 +1,28 @@
+var searchData=
+[
+  ['gender',['gender',['../struct_node.html#a75d8dff1a9666e3cb40d459428235abe',1,'Node']]],
+  ['getcarrnumber',['getCarrNumber',['../_supermercado_8c.html#ab1643f37b0ba7ee338010a89794bee67',1,'Supermercado.c']]],
+  ['getcitizen',['getCitizen',['../_supermercado_8h.html#a44cd7f03a65d9717106ad28c1456b814',1,'Supermercado.h']]],
+  ['getclient',['getClient',['../_supermercado_8c.html#abe438f20c3bc513248fa73a0e05446c3',1,'Supermercado.c']]],
+  ['getclientnumber',['getClientNumber',['../_supermercado_8h.html#ae168fc35af67844b9455f22378c2366c',1,'Supermercado.h']]],
+  ['getclienttopay',['getClientToPay',['../_supermercado_8c.html#a6fffc93f32ac005db86172ce217e9ca1',1,'Supermercado.c']]],
+  ['getgoldencitizen',['getGoldenCitizen',['../_supermercado_8h.html#aa0f2d8c65d4e826eb5a6bc8477f6110d',1,'Supermercado.h']]],
+  ['getnewcaja',['getNewCaja',['../_supermercado_8c.html#aa7ae447de119b561b96e4f4b9961fbf8',1,'Supermercado.c']]],
+  ['getnewcarr',['getNewCarr',['../_supermercado_8c.html#a6531df144bb0be641709acc4aaed1901',1,'Supermercado.c']]],
+  ['getnewnode',['getNewNode',['../_supermercado_8c.html#a43d326688a36778aef48282dc94e1095',1,'Supermercado.c']]],
+  ['getnewnodecirc',['getNewNodeCirc',['../_supermercado_8c.html#a063621f014d5a23b87b2588d74ef84b3',1,'Supermercado.c']]],
+  ['getnocajas',['getNoCajas',['../_supermercado_8h.html#a8f3b65c87f4c966ea70fbd688887a40f',1,'Supermercado.h']]],
+  ['getnumcarretas',['getNumCarretas',['../_supermercado_8h.html#a252336a22e7bef48a4d19b65ca9290c4',1,'Supermercado.h']]],
+  ['getpercompras',['getPerCompras',['../_supermercado_8h.html#ae256bf3f0559c0667e305fd90c1e6a39',1,'Supermercado.h']]],
+  ['getqueuetopay',['getQueueToPay',['../_supermercado_8c.html#a74dd95ea235734434f204feebacbc5bd',1,'Supermercado.c']]],
+  ['getrandom',['getRandom',['../_supermercado_8h.html#a0897de014710b1d1949f8e6a41dae523',1,'Supermercado.h']]],
+  ['getstep',['getStep',['../_supermercado_8c.html#a049f59d48398f8d508938b3b43c947a8',1,'Supermercado.c']]],
+  ['goldenhead',['goldenHead',['../_supermercado_8c.html#a7afd1f5c1ebf344a324739dbf5fa0e55',1,'Supermercado.c']]],
+  ['graph',['graph',['../_supermercado_8c.html#a7aff95a84ba67c82652d9f550de4fbef',1,'Supermercado.c']]],
+  ['graphcajas',['graphCajas',['../_supermercado_8c.html#ac4a28b67004def0afde96dec86a2cfc4',1,'Supermercado.c']]],
+  ['graphcolacliente',['graphColaCliente',['../_supermercado_8c.html#ab078b278df7e94ac18782b3dd2257b94',1,'Supermercado.c']]],
+  ['graphcolastopay',['graphColasToPay',['../_supermercado_8c.html#a7658b8c1b7ac91154a46647bde5408ae',1,'Supermercado.c']]],
+  ['graphfile',['graphFile',['../_supermercado_8c.html#a17171ebc15c2aeb722f70778f47be9fa',1,'Supermercado.c']]],
+  ['graphpersonascompras',['graphPersonasCompras',['../_supermercado_8c.html#a5a712a03354a25046bec394781ce42f9',1,'Supermercado.c']]],
+  ['graphstacks',['graphStacks',['../_supermercado_8c.html#a56082de13ee8f9878e4a2c46ebfb9c9f',1,'Supermercado.c']]]
+];
